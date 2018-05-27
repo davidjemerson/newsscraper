@@ -9,15 +9,13 @@ var db = require("./models");
 var app = express();
 var PORT = process.env.PORT || 8080;
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
 app.use(express.static("public"));
 
-// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
 var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
 
-// Set mongoose to leverage built in JavaScript ES6 Promises
-// Connect to the Mongo DB
 mongoose.Promise = Promise;
 mongoose.connect(MONGODB_URI);
 
@@ -65,10 +63,33 @@ app.get("/articles/:id", function(req, res) {
 		});
 });
 
+app.get("/saved", function(req, res) {
+	db.Article.find({saved:true})
+		.then(function(dbArticle) {
+			res.json(dbArticle);
+		})
+		.catch(function(err) {
+			res.json(err);
+		});
+});
+
 app.post("/articles/:id", function(req, res) {
 	db.Comment.create(req.body)
 		.then(function(dbComment) {
 			return db.Article.findOneAndUpdate({_id:req.params.id}, {comment:dbComment._id}, {new: true});
+		})
+		.then(function(dbArticle) {
+			res.json(dbArticle);
+		})
+		.catch(function(err) {
+			res.json(err);
+		});
+});
+
+app.post("/articles/:id", function(req, res) {
+	db.Comment.create(req.body)
+		.then(function(dbArticle) {
+			return db.Article.findOneAndUpdate({_id:req.params.id}, {saved:true});
 		})
 		.then(function(dbArticle) {
 			res.json(dbArticle);

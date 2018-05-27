@@ -22,8 +22,17 @@ var ArticleSchema = new Schema({
 	comment: {
 		type: Schema.Types.ObjectId,
 		ref: "Comment"
+	},
+	saved: {
+		type: Boolean,
+		default: false
 	}
 });
+
+ArticleSchema.methods.saveArticle = function() {
+  this.saved = true;
+  return this.saved;
+};
 
 var Article = mongoose.model("Article", ArticleSchema);
 
